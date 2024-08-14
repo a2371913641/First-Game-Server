@@ -98,6 +98,7 @@ public class ReaderThread implements Runnable{
                                 System.out.println("已登录"+clientClass1.zhanghao);
                             }
                             clientClass.setOnLine(true);
+                            clientClass.setLocation("还未进入选择大厅");
                             System.out.println("client.onLine="+clientClass.onLine);
                             GongGongZiYuan.isLogin.add(clientClass);
                             os.write(("setClient:/n"+clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine+"_").getBytes());
@@ -143,17 +144,20 @@ public class ReaderThread implements Runnable{
                 case "fourlyActivityOK":
                     System.out.println(s);
                     clientClass.socket=this.socket;
+                    clientClass.setLocation("在选择大厅");
                     os.write(("dating:/n" + DatinString() + "_").getBytes());
                     os.write(("ziliao:/n" + "_").getBytes());
                     os.write(("haoyou:/n" + "坏娃娃/n乖乖/n宝宝/n嘻嘻/n吸西/n冬瓜/n萝卜/n香菜/n西瓜/n吸西/n冬瓜/n萝卜/n香菜/n西瓜" + "_").getBytes());
                     break;
                 case "jinrudating:":
                     nowAtHall = Integer.parseInt(strings[1]);
+                    clientClass.setNowAtHall(nowAtHall);
                     GongGongZiYuan.dating[nowAtHall] = GongGongZiYuan.dating[nowAtHall] + 1;
                     GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).add(clientClass);
                     os.write(("jinrudating:/n"+nowAtHall+"_").getBytes());
                     os.write(("dating:/n" + DatinString()+ "_").getBytes());
                     System.out.println(clientClass.name+"进来了");
+                    clientClass.setLocation("在大厅"+nowAtHall);
                     break;
 
                 case "4-5:":
@@ -166,12 +170,16 @@ public class ReaderThread implements Runnable{
                     System.out.println("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_"+GongGongZiYuan.datingListRoomList.get(nowAtHall).size());
                     break;
                 case "tuichudating:":
-                    GongGongZiYuan.dating[nowAtHall] = GongGongZiYuan.dating[nowAtHall] - 1;
-                    GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).remove(clientClass);
-                    GongGongZiYuan.onLineClients.get(nowAtHall).remove(clientClass);
-                    gongGongZiYuan.allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(nowAtHall))+"_",
-                            GongGongZiYuan.onLineClients.get(nowAtHall));
-                    os.write(("dating:/n" + DatinString()+ "_").getBytes());
+//                    GongGongZiYuan.dating[nowAtHall] = GongGongZiYuan.dating[nowAtHall] - 1;
+//                    GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).remove(clientClass);
+//                    GongGongZiYuan.onLineClients.get(nowAtHall).remove(clientClass);
+//                    gongGongZiYuan.allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(nowAtHall))+"_",
+//                            GongGongZiYuan.onLineClients.get(nowAtHall));
+//                    os.write(("dating:/n" + DatinString()+ "_").getBytes());
+//                    nowAtHall=-1;
+//                    clientClass.setNowAtHall(nowAtHall);
+//                    clientClass.setLocation("在选择大厅");
+                    gongGongZiYuan.outDating(clientClass);
                     break;
                 case "liaotianxiaoxi:":
                     System.out.println(s);
@@ -186,22 +194,24 @@ public class ReaderThread implements Runnable{
 
                     os.write(("5-6:/n"+"_").getBytes());
                     System.out.println("5-6");
-
+                    clientClass.setLocation("在大厅"+nowAtHall+"中的["+room.roomHaoMa+"]"+room.roomName);
                     break;
 
                 case "buttonJinru:":
                     System.out.println(s+"="+strings.length);
                     os.write(("5-6:/n"+"_").getBytes());
                     room=getHaoMaRoom(Integer.parseInt(strings[1]));
-
+                    clientClass.setLocation("在大厅"+nowAtHall+"中的["+room.roomHaoMa+"]"+room.roomName);
                     break;
                 case "jinruRoom:":
                     room.clientClasses.add(clientClass);
+                    clientClass.atRoom=room;
                     GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).remove(clientClass);
                     //                                                                                                         房间号
                     gongGongZiYuan.allSocketSend("setInTheRoomClient:/n"+getClientString(room.clientClasses)+"_",room.clientClasses);
                     gongGongZiYuan.allSocketSend("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall))+"_",room.clientClasses);
                     os.write(("setRoom:/n"+room.roomName+"/n"+room.roomAdmin+"/n"+room.roomType+"/n"+room.roomHaoMa+"_").getBytes());
+                    clientClass.setLocation("在大厅"+nowAtHall+"中的["+room.roomHaoMa+"]"+room.roomName);
                     break;
 
                 case "InTheRoomliaotianxiaoxi:":
@@ -210,16 +220,22 @@ public class ReaderThread implements Runnable{
                     break;
 
                 case "tuichuRoom:":
-                    room.clientClasses.remove(clientClass);
-                    if(room.clientClasses.isEmpty()){
-                        GongGongZiYuan.datingListRoomList.get(nowAtHall).remove(room);
-                    }
-                    gongGongZiYuan.allSocketSend("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_",GongGongZiYuan.onLineClients.get(nowAtHall));
-                    System.out.println("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_"+GongGongZiYuan.datingListRoomList.get(nowAtHall).size());
-                    GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).add(clientClass);
+//                    room.clientClasses.remove(clientClass);
+//                    clientClass.atRoom=null;
+//                    if(room.clientClasses.isEmpty()){
+//                        GongGongZiYuan.datingListRoomList.get(nowAtHall).remove(room);
+//                    }
+//                    gongGongZiYuan.allSocketSend("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_",GongGongZiYuan.onLineClients.get(nowAtHall));
+//                    System.out.println("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_"+GongGongZiYuan.datingListRoomList.get(nowAtHall).size());
+//                    gongGongZiYuan.allSocketSend("setInTheRoomClient:/n"+getClientString(room.clientClasses)+"_",room.clientClasses);
+//                    GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).add(clientClass);
+//                    gongGongZiYuan.allSocketSend("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall))+"_",room.clientClasses);
+//                    clientClass.setLocation("在大厅"+nowAtHall);
+                    gongGongZiYuan.outRoom(clientClass);
                     break;
 
                 case "wanquantuichu:":
+                    clientClass.onLine=false;
                     System.out.println("完全退出！");
                     os.write("tuichuyouxi:/n退出游戏".getBytes());
                     GongGongZiYuan.isLogin.remove(clientClass);
@@ -284,15 +300,7 @@ public class ReaderThread implements Runnable{
         GongGongZiYuan.datingListRoomList.get(nowAtHall).add(room);
     }
 
-    public void addChangeList(ClientClass clientClass,OutputStream os){
-        if(GongGongZiYuan.datingListRoomList.get(nowAtHall).contains(clientClass)){
-            gongGongZiYuan.allSocketSend("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_",GongGongZiYuan.onLineClients.get(nowAtHall));
-        }
 
-        if(room.clientClasses.contains(clientClass)){
-            gongGongZiYuan.allSocketSend();
-        }
-    }
 
 //    private void
 }

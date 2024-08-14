@@ -8,6 +8,12 @@ public class ClientClass {
     Boolean onLine;
     List<ClientClass> haoyouList=new ArrayList<>();
 
+    String location=null;
+
+    Room atRoom;
+
+    int nowAtHall;
+
     Socket socket;
     public ClientClass(String zhanghao,String admin,String name,String xb,int image,Boolean onLine){
 
@@ -28,6 +34,14 @@ public class ClientClass {
 
     public void setImage(int i){
         this.image=i;
+    }
+
+    public void setLocation(String location){
+        this.location=location;
+    }
+
+    public String getLocation(){
+        return location;
     }
 
     public void setAdmin(String s){
@@ -51,5 +65,13 @@ public class ClientClass {
 
     public void setOnLine(Boolean onLine) {
         this.onLine = onLine;
+    }
+
+    public void setNowAtHall(int nowAtHall){
+        this.nowAtHall=nowAtHall;
+    }
+
+    public void setAtRoom(Room room){
+        this.atRoom=room;
     }
 }

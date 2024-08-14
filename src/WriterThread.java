@@ -25,9 +25,16 @@ public class WriterThread implements Runnable{
                 os.flush();
             }
         } catch (IOException e) {;
-            GongGongZiYuan.clientSockets.remove(socket);
-            GongGongZiYuan.isLogin.remove(gongGongZiYuan.getSocketClient(socket));
-            GongGongZiYuan.
+            ClientClass clientClass=gongGongZiYuan.getSocketClient(socket);
+//            if(clientClass.atRoom!=null){
+//                gongGongZiYuan.outRoom(clientClass);
+//            }
+//            gongGongZiYuan.outDating(clientClass);
+//            gongGongZiYuan.outSelectDating(clientClass);
+//            gongGongZiYuan.CompleteExit(clientClass);
+
+            System.out.println("WriterThread="+clientClass.name);
+
         }
     }
 }

@@ -1,14 +1,18 @@
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GongGongZiYuan {
 
 
+
+
     public static List<Socket> clientSockets=new ArrayList<>();
     static int[] dating={100,0,0,0,0,0,0,0};
+
 
     static List<ArrayList<Room>> datingListRoomList=new ArrayList<>();
     static List<ArrayList<ClientClass>> onLineClients=new ArrayList<>();//各个大厅的总玩家
@@ -21,6 +25,8 @@ public class GongGongZiYuan {
 
     static  List<ClientClass> clients=new ArrayList<>();//所有注册过的用户
 
+    static List<MyListListener> listListeners=new ArrayList<>();
+
     public void allSocketSend(String data,List<ClientClass> clients) {
       for(int i=clients.size()-1;i>=0;i--){
           Socket socket=clients.get(i).socket;
@@ -29,12 +35,17 @@ public class GongGongZiYuan {
               os.write(data.getBytes());
               System.out.println(socket.hashCode()+":"+data);
           } catch (IOException e) {
-              clientSockets.remove(socket);
-              clients.remove(clients.get(i));
-              isLogin.remove(clients. get(i));
+              ClientClass clientClass=getSocketClient(socket);
+              LiXian(clientClass);
 
           }
       }
+    }
+
+    public void sendOne(ClientClass clientClass,String s) throws IOException {
+        Socket socket=clientClass.socket;
+        OutputStream so=socket.getOutputStream();
+        so.write(s.getBytes());
     }
 
     public int getRoomHaoMa(int now){
@@ -66,4 +77,155 @@ public class GongGongZiYuan {
         }
         return client;
     }
+
+    public String DatinString(){
+        StringBuilder sb=new StringBuilder();
+        for(int i=0;i<GongGongZiYuan.dating.length;i++){
+            if(i==GongGongZiYuan.dating.length-1){
+                sb.append(GongGongZiYuan.dating[i]);
+                break;
+            }
+            sb.append(GongGongZiYuan.dating[i]+"/n");
+        }
+        return sb.toString();
+    }
+
+    public String getClientString(ArrayList<ClientClass> clientClasses){
+        StringBuilder sb=new StringBuilder();
+        for(int i=0;i<clientClasses.size();i++){
+            ClientClass clientClass=clientClasses.get(i);
+            if(i==clientClasses.size()-1){
+                sb.append(clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine);
+                break;
+            }
+            sb.append(clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n");
+        }
+        return sb.toString();
+    }
+
+    public String roomListString(ArrayList<Room> list){
+        StringBuilder sb=new StringBuilder();
+        for(int i=0;i<list.size();i++){
+            Room room=list.get(i);
+            if(i==list.size()-1){
+                sb.append(room.roomName+"/n"+room.roomType+"/n"+room.roomAdmin+"/n"+room.roomHaoMa);
+                break;
+            }
+            sb.append(room.roomName+"/n"+room.roomType+"/n"+room.roomAdmin+"/n"+room.roomHaoMa+"/n");
+        }
+        return sb.toString();
+    }
+
+    public void outRoom(ClientClass clientClass){
+        clientClass.atRoom.clientClasses.remove(clientClass);
+        Room room=clientClass.atRoom;
+        clientClass.setLocation("在大厅"+clientClass.nowAtHall);
+        clientClass.atRoom=null;
+        if(room.clientClasses.isEmpty()){
+            removeRoom(clientClass.nowAtHall,room);
+        }else {
+            allSocketSend("setRoomList:/n" +
+                            roomListString(GongGongZiYuan.datingListRoomList.get(clientClass.nowAtHall)) + "_",
+                    GongGongZiYuan.onLineClients.get(clientClass.nowAtHall));
+
+            allSocketSend("setInTheRoomClient:/n"+getClientString(room.clientClasses)+"_",room.clientClasses);
+            allSocketSend
+                    ("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(clientClass.nowAtHall))+"_",room.clientClasses);
+        }
+        allSocketSend("sethaoyou",clientClass.haoyouList);
+        GongGongZiYuan.atDatingOutOfRoom.get(clientClass.nowAtHall).add(clientClass);
+    }
+
+    public void removeRoom(int nowAtHall,Room room){
+        datingListRoomList.get(nowAtHall).remove(room);
+        allSocketSend("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_",GongGongZiYuan.onLineClients.get(nowAtHall));
+        System.out.println("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_"+GongGongZiYuan.datingListRoomList.get(nowAtHall).size());
+
+    }
+
+    public void outDating(ClientClass clientClass){
+        int nowAtHall=clientClass.nowAtHall;
+        dating[nowAtHall] = dating[nowAtHall] - 1;
+        atDatingOutOfRoom.get(nowAtHall).remove(clientClass);
+        onLineClients.get(nowAtHall).remove(clientClass);
+        allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(nowAtHall))+"_",
+                GongGongZiYuan.onLineClients.get(nowAtHall));
+        allSocketSend("dating:/n" + DatinString()+ "_",isLogin);
+        nowAtHall=-1;
+        clientClass.setNowAtHall(nowAtHall);
+        clientClass.setLocation("在选择大厅");
+        allSocketSend("sethaoyou",clientClass.haoyouList);
+    }
+
+    public void outDatingLixian(ClientClass clientClass){
+        int nowAtHall=clientClass.nowAtHall;
+        dating[nowAtHall] = dating[nowAtHall] - 1;
+        atDatingOutOfRoom.get(nowAtHall).remove(clientClass);
+        onLineClients.get(nowAtHall).remove(clientClass);
+        allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(nowAtHall))+"_",
+                GongGongZiYuan.onLineClients.get(nowAtHall));
+        nowAtHall=-1;
+        clientClass.setNowAtHall(nowAtHall);
+        clientClass.setLocation("在选择大厅");
+        allSocketSend("sethaoyou",clientClass.haoyouList);
+    }
+    public void outSelectDating(ClientClass clientClass){
+        clientClass.setLocation("还未进入选择大厅");
+        allSocketSend("sethaoyou",clientClass.haoyouList);
+    }
+
+    public void CompleteExit(ClientClass clientClass){
+        clientClass.setLocation(null);
+        clientClass.onLine=false;
+        isLogin.remove(clientClass);
+        allSocketSend("sethaoyou",clientClass.haoyouList);
+        clientSockets.remove(clientClass.socket);
+        System.out.println(clientClass.name+"已退出");
+    }
+
+    public void LiXian(ClientClass clientClass){
+        Room room=clientClass.atRoom;
+        int notAtHall=clientClass.nowAtHall;
+        clientClass.nowAtHall=-1;
+        tuichuRemoveList(clientClass,room,notAtHall);
+        clientClass.onLine=false;
+        clientClass.setLocation(null);
+
+        if(notAtHall!=-1){
+            allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(notAtHall))+"_",
+                    GongGongZiYuan.onLineClients.get(notAtHall));
+            allSocketSend("dating:/n" + DatinString()+ "_",isLogin);
+            if(room!=null&&room.clientClasses.isEmpty()){
+                removeRoom(notAtHall,room);
+            }else if(room!=null){
+                allSocketSend("setRoomList:/n" +
+                                roomListString(GongGongZiYuan.datingListRoomList.get(notAtHall)) + "_",
+                        GongGongZiYuan.onLineClients.get(notAtHall));
+
+                allSocketSend("setInTheRoomClient:/n"+getClientString(room.clientClasses)+"_",room.clientClasses);
+                allSocketSend
+                        ("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(notAtHall))+"_",room.clientClasses);
+            }
+        }
+        allSocketSend("sethaoyou",clientClass.haoyouList);
+
+    }
+
+
+    public void tuichuRemoveList(ClientClass clientClass,Room room,int nowAtHall){
+        isLogin.remove(clientClass);
+        if(nowAtHall!=-1) {
+            atDatingOutOfRoom.get(nowAtHall).remove(clientClass);
+            if (onLineClients.get(nowAtHall).contains(clientClass)) {
+                onLineClients.get(nowAtHall).remove(clientClass);
+                dating[nowAtHall] = dating[nowAtHall] - 1;
+            }
+            if(room!=null) {
+                room.clientClasses.remove(clientClass);
+            }
+        }
+
+    }
+
+
 }
