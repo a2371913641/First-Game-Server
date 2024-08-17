@@ -147,7 +147,7 @@ public class ReaderThread implements Runnable{
                     clientClass.setLocation("在选择大厅");
                     os.write(("dating:/n" + DatinString() + "_").getBytes());
                     os.write(("ziliao:/n" + "_").getBytes());
-                    os.write(("haoyou:/n" + "坏娃娃/n乖乖/n宝宝/n嘻嘻/n吸西/n冬瓜/n萝卜/n香菜/n西瓜/n吸西/n冬瓜/n萝卜/n香菜/n西瓜" + "_").getBytes());
+                    os.write(("setHaoYouList:/n"+getClientString(clientClass.haoyouList)+"_").getBytes());
                     break;
                 case "jinrudating:":
                     nowAtHall = Integer.parseInt(strings[1]);
@@ -237,7 +237,7 @@ public class ReaderThread implements Runnable{
                 case "wanquantuichu:":
                     clientClass.onLine=false;
                     System.out.println("完全退出！");
-                    os.write("tuichuyouxi:/n退出游戏".getBytes());
+                    os.write("tuichuyouxi:/n退出游戏_".getBytes());
                     GongGongZiYuan.isLogin.remove(clientClass);
                     for(ClientClass clientClass1:GongGongZiYuan.isLogin){
                         System.out.println("已经登陆"+clientClass1.zhanghao);
@@ -248,6 +248,33 @@ public class ReaderThread implements Runnable{
                     }
                     System.out.println("现存Socket:"+GongGongZiYuan.clientSockets.size());
                     socket.close();
+                    break;
+                case"ClientAddFriend:":
+                    gongGongZiYuan.sendOne(clientClass.atRoom.clientClasses.get(Integer.parseInt(strings[1])),
+                            "serverAddFriend:/n"+clientClass.name+"/n"+clientClass.zhanghao+"_");
+                    break;
+
+                case"ClientRogerTwoAgree:":
+                    System.out.println("oneRoger:"+clientClass.zhanghao+"/+"+strings[1]);
+                    io.outputFile(clientClass.zhanghao+"的好友.txt",strings[1]+"/n",true);
+                    clientClass.haoyouList.add(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])));
+                    os.write(("setHaoYouList:/n"+getClientString(clientClass.haoyouList)+"_").getBytes());
+
+                    break;
+
+                case"ClientTwoAgree:":
+                    System.out.println("twoAgree:"+clientClass.zhanghao+"/+"+strings[1]);
+                    io.outputFile(clientClass.zhanghao+"的好友.txt",strings[1]+"/n",true);
+                    clientClass.haoyouList.add(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])));
+                    gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),
+                            "ServerTwoAgree:/n"+clientClass.getZhanghao()+"_");
+                    os.write(("setHaoYouList:/n"+getClientString(clientClass.haoyouList)+"_").getBytes());
+                    break;
+
+
+                case"ClientTwoRefuse:":
+                    gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),
+                            "ServerTwoRefuse:"+"_");
                     break;
                 default:
                     System.out.println(s);

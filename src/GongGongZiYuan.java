@@ -132,7 +132,7 @@ public class GongGongZiYuan {
             allSocketSend
                     ("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(clientClass.nowAtHall))+"_",room.clientClasses);
         }
-        allSocketSend("sethaoyou",clientClass.haoyouList);
+        allSocketSend("setHaoYouList:/n_",clientClass.haoyouList);
         GongGongZiYuan.atDatingOutOfRoom.get(clientClass.nowAtHall).add(clientClass);
     }
 
@@ -184,7 +184,10 @@ public class GongGongZiYuan {
     }
 
     public void LiXian(ClientClass clientClass){
-        Room room=clientClass.atRoom;
+        Room room=null;
+        if(clientClass.atRoom!=null){
+            room=clientClass.atRoom;
+        }
         int notAtHall=clientClass.nowAtHall;
         clientClass.nowAtHall=-1;
         tuichuRemoveList(clientClass,room,notAtHall);

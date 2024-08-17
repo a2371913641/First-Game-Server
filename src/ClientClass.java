@@ -6,7 +6,7 @@ public class ClientClass {
     String name,zhanghao,xinbie,admin;
     int image;
     Boolean onLine;
-    List<ClientClass> haoyouList=new ArrayList<>();
+    ArrayList<ClientClass> haoyouList=new ArrayList<>();
 
     String location=null;
 
