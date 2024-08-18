@@ -12,7 +12,7 @@ public class ClientClass {
 
     Room atRoom;
 
-    int nowAtHall;
+    int nowAtHall=-1;
 
     Socket socket;
     public ClientClass(String zhanghao,String admin,String name,String xb,int image,Boolean onLine){
@@ -71,7 +71,43 @@ public class ClientClass {
         this.nowAtHall=nowAtHall;
     }
 
+    public String getNowAtHall(){
+        if(nowAtHall==-1){
+            return "null";
+        }
+        return nowAtHall+"";
+    }
+
     public void setAtRoom(Room room){
         this.atRoom=room;
     }
+
+    public String getRoomName(){
+        if(atRoom==null){
+            return "null";
+        }
+        return atRoom.roomName;
+    }
+
+    public String getRoomType(){
+        if(atRoom==null){
+            return "null";
+        }
+        return atRoom.roomType;
+    }
+
+    public String isRoomAdmin(){
+        if(atRoom==null){
+            return "null";
+        }
+        return !atRoom.getRoomAdmin().equals(" ")+"";
+    }
+
+    public String getRoomHaoMa(){
+        if(atRoom==null){
+            return "null";
+        }
+        return atRoom.roomHaoMa+"";
+    }
+
 }

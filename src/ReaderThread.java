@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.StandardSocketOptions;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ReaderThread implements Runnable{
@@ -85,6 +86,7 @@ public class ReaderThread implements Runnable{
         OutputStream os= null;
         try {
             os = socket.getOutputStream();
+            System.out.println("s="+s);
             String[] strings=s.split("/n");
             switch (strings[0]) {
                 case "login:":
@@ -101,6 +103,7 @@ public class ReaderThread implements Runnable{
                             clientClass.setLocation("还未进入选择大厅");
                             System.out.println("client.onLine="+clientClass.onLine);
                             GongGongZiYuan.isLogin.add(clientClass);
+                            gongGongZiYuan.setHaoYouList(clientClass.haoyouList);
                             os.write(("setClient:/n"+clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine+"_").getBytes());
                             os.write(("denglu:/n欢迎回来，"+clientClass.name+"!_").getBytes());
                             os.write("OK_".getBytes());
@@ -148,6 +151,7 @@ public class ReaderThread implements Runnable{
                     os.write(("dating:/n" + DatinString() + "_").getBytes());
                     os.write(("ziliao:/n" + "_").getBytes());
                     os.write(("setHaoYouList:/n"+getClientString(clientClass.haoyouList)+"_").getBytes());
+                    gongGongZiYuan.setHaoYouList(clientClass.haoyouList);
                     break;
                 case "jinrudating:":
                     nowAtHall = Integer.parseInt(strings[1]);
@@ -168,6 +172,8 @@ public class ReaderThread implements Runnable{
                             getClientString(GongGongZiYuan.onLineClients.get(nowAtHall))+"_");
                     gongGongZiYuan.allSocketSend("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_",GongGongZiYuan.onLineClients.get(nowAtHall));
                     System.out.println("setRoomList:/n"+roomListString(GongGongZiYuan.datingListRoomList.get(nowAtHall))+"_"+GongGongZiYuan.datingListRoomList.get(nowAtHall).size());
+                    os.write(("setHaoYouList:/n"+getClientString(clientClass.haoyouList)+"_").getBytes());
+                    gongGongZiYuan.setHaoYouList(clientClass.haoyouList);
                     break;
                 case "tuichudating:":
 //                    GongGongZiYuan.dating[nowAtHall] = GongGongZiYuan.dating[nowAtHall] - 1;
@@ -212,6 +218,8 @@ public class ReaderThread implements Runnable{
                     gongGongZiYuan.allSocketSend("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall))+"_",room.clientClasses);
                     os.write(("setRoom:/n"+room.roomName+"/n"+room.roomAdmin+"/n"+room.roomType+"/n"+room.roomHaoMa+"_").getBytes());
                     clientClass.setLocation("在大厅"+nowAtHall+"中的["+room.roomHaoMa+"]"+room.roomName);
+                    os.write(("setHaoYouList:/n"+getClientString(clientClass.haoyouList)+"_").getBytes());
+                    gongGongZiYuan.setHaoYouList(clientClass.haoyouList);
                     break;
 
                 case "InTheRoomliaotianxiaoxi:":
@@ -275,6 +283,13 @@ public class ReaderThread implements Runnable{
                 case"ClientTwoRefuse:":
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),
                             "ServerTwoRefuse:"+"_");
+                    break;
+
+                case"ClientZiLiao:":
+
+                    ClientClass client=GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1]));
+                    os.write(("ServerZiLiao:/n"+client.name+"/n"+client.onLine+"/n"+client.getNowAtHall()+"/n"
+                            +client.getRoomHaoMa()+"/n"+client.getRoomName()+"/n"+client.getRoomType()+"/n"+client.isRoomAdmin()+"_").getBytes());
                     break;
                 default:
                     System.out.println(s);

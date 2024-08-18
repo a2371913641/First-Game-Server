@@ -29,15 +29,17 @@ public class GongGongZiYuan {
 
     public void allSocketSend(String data,List<ClientClass> clients) {
       for(int i=clients.size()-1;i>=0;i--){
-          Socket socket=clients.get(i).socket;
-          try {
-              OutputStream os=socket.getOutputStream();
-              os.write(data.getBytes());
-              System.out.println(socket.hashCode()+":"+data);
-          } catch (IOException e) {
-              ClientClass clientClass=getSocketClient(socket);
-              LiXian(clientClass);
+          if(clients.get(i).onLine) {
+              Socket socket=clients.get(i).socket;
+              try {
+                  OutputStream os = socket.getOutputStream();
+                  os.write(data.getBytes());
+                  System.out.println(socket.hashCode() + ":" + data);
+              } catch (IOException e) {
+                  ClientClass clientClass = getSocketClient(socket);
+                  LiXian(clientClass);
 
+              }
           }
       }
     }
@@ -132,7 +134,7 @@ public class GongGongZiYuan {
             allSocketSend
                     ("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(clientClass.nowAtHall))+"_",room.clientClasses);
         }
-        allSocketSend("setHaoYouList:/n_",clientClass.haoyouList);
+        setHaoYouList(clientClass.haoyouList);
         GongGongZiYuan.atDatingOutOfRoom.get(clientClass.nowAtHall).add(clientClass);
     }
 
@@ -154,7 +156,7 @@ public class GongGongZiYuan {
         nowAtHall=-1;
         clientClass.setNowAtHall(nowAtHall);
         clientClass.setLocation("在选择大厅");
-        allSocketSend("sethaoyou",clientClass.haoyouList);
+        setHaoYouList(clientClass.haoyouList);
     }
 
     public void outDatingLixian(ClientClass clientClass){
@@ -167,18 +169,18 @@ public class GongGongZiYuan {
         nowAtHall=-1;
         clientClass.setNowAtHall(nowAtHall);
         clientClass.setLocation("在选择大厅");
-        allSocketSend("sethaoyou",clientClass.haoyouList);
+        setHaoYouList(clientClass.haoyouList);
     }
     public void outSelectDating(ClientClass clientClass){
         clientClass.setLocation("还未进入选择大厅");
-        allSocketSend("sethaoyou",clientClass.haoyouList);
+        setHaoYouList(clientClass.haoyouList);
     }
 
     public void CompleteExit(ClientClass clientClass){
         clientClass.setLocation(null);
         clientClass.onLine=false;
         isLogin.remove(clientClass);
-        allSocketSend("sethaoyou",clientClass.haoyouList);
+        setHaoYouList(clientClass.haoyouList);
         clientSockets.remove(clientClass.socket);
         System.out.println(clientClass.name+"已退出");
     }
@@ -210,7 +212,7 @@ public class GongGongZiYuan {
                         ("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(notAtHall))+"_",room.clientClasses);
             }
         }
-        allSocketSend("sethaoyou",clientClass.haoyouList);
+        setHaoYouList(clientClass.haoyouList);
 
     }
 
@@ -228,6 +230,23 @@ public class GongGongZiYuan {
             }
         }
 
+    }
+
+    public void setHaoYouList(List<ClientClass> clients){
+        for(int i=0;i<clients.size();i++){
+            if(clients.get(i).onLine) {
+                Socket socket=clients.get(i).socket;
+                try {
+                    OutputStream os = socket.getOutputStream();
+                    os.write(("setHaoYouList:/n"+getClientString(clients.get(i).haoyouList)+"_").getBytes());
+
+                } catch (IOException e) {
+                    ClientClass clientClass = getSocketClient(socket);
+                    LiXian(clientClass);
+
+                }
+            }
+        }
     }
 
 
