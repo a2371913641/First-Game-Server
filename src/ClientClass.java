@@ -100,7 +100,7 @@ public class ClientClass {
         if(atRoom==null){
             return "null";
         }
-        return !atRoom.getRoomAdmin().equals(" ")+"";
+        return !atRoom.getRoomAdmin().equals("/?")+"";
     }
 
     public String getRoomHaoMa(){

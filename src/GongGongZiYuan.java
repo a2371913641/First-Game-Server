@@ -238,7 +238,7 @@ public class GongGongZiYuan {
                 Socket socket=clients.get(i).socket;
                 try {
                     OutputStream os = socket.getOutputStream();
-                    os.write(("setHaoYouList:/n"+getClientString(clients.get(i).haoyouList)+"_").getBytes());
+                    os.write(("setHaoYouList:/n"+getClientString(beingChlentTiTheFront(clients.get(i).haoyouList))+"_").getBytes());
 
                 } catch (IOException e) {
                     ClientClass clientClass = getSocketClient(socket);
@@ -248,6 +248,19 @@ public class GongGongZiYuan {
             }
         }
     }
+
+    public ArrayList<ClientClass> beingChlentTiTheFront(ArrayList<ClientClass> clients){
+
+        for(int i=0;i<clients.size();i++){
+            if(clients.get(i).onLine){
+                ClientClass clientClass=clients.get(i);
+                clients.remove(i);
+                clients.add(0,clientClass);
+            }
+        }
+        return clients;
+    }
+
 
 
 }
