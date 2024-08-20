@@ -69,6 +69,18 @@ public class GongGongZiYuan {
         return postion;
     }
 
+    public int getClientNamePostion(String name){
+        int postion=-1;
+        for(int i=0;i<GongGongZiYuan.clients.size();i++){
+            ClientClass clientClass=GongGongZiYuan.clients.get(i);
+            if(clientClass.name.equals(name)){
+                postion=i;
+                break;
+            }
+        }
+        return postion;
+    }
+
     public ClientClass getSocketClient(Socket socket){
         ClientClass client=null;
         for(ClientClass clientClass:isLogin){

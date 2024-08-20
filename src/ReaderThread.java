@@ -235,8 +235,21 @@ public class ReaderThread implements Runnable{
                     break;
 
                 case "InTheRoomliaotianxiaoxi:":
+
                     System.out.println("InTheRoomliaotianxiaoxi:data="+s);
-                    gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n"+clientClass.name+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
+                    if(strings[1].substring(0,1).equals("@")){
+                        //data=InTheRoomliaotianxiaoxi:/n"+"@name:data+"/n0"+"_";
+                        String[] strings1=strings[1].split(":");
+                        if(strings1.length==2){
+                            System.out.println("name="+strings1[0].substring(1));
+                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"InTheRoomliaotianxiaoxi:/n"+"[私]"+clientClass.name+":"+strings1[1]+"/n"+strings[2]+"_");
+                            os.write(("InTheRoomliaotianxiaoxi:/n"+"[私]"+clientClass.name+":"+strings1[0]+":"+strings1[1]+"/n"+strings[2]+"_").getBytes());
+                        }else{
+                            gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n"+clientClass.name+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
+                                                }
+                    }else {
+                        gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n"+clientClass.name+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
+                    }
                     break;
 
                 case "tuichuRoom:":
