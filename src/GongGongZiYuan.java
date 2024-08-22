@@ -165,12 +165,23 @@ public class GongGongZiYuan {
         allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(nowAtHall))+"_",
                 GongGongZiYuan.onLineClients.get(nowAtHall));
         allSocketSend("dating:/n" + DatinString()+ "_",isLogin);
+        allSocketSend("setyaoqingList:/n"+getClientString(GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall))+"_",GongGongZiYuan.onLineClients.get(nowAtHall));
         nowAtHall=-1;
         clientClass.setNowAtHall(nowAtHall);
         clientClass.setLocation("在选择大厅");
         setHaoYouList(clientClass.haoyouList);
+
     }
 
+    public List<ClientClass> onLineFriend(List<ClientClass> FirendList){
+        List<ClientClass> onLineFriend=new ArrayList<>();
+        for(ClientClass clientClass:FirendList){
+            if(clientClass.onLine){
+                onLineFriend.add(clientClass);
+            }
+        }
+        return onLineFriend;
+    }
     public void outDatingLixian(ClientClass clientClass){
         int nowAtHall=clientClass.nowAtHall;
         dating[nowAtHall] = dating[nowAtHall] - 1;
