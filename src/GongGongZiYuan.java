@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -282,6 +283,41 @@ public class GongGongZiYuan {
             }
         }
         return clients;
+    }
+
+    public void sendSiXin(ClientClass client,String myName,String content,String time){
+        if(client.onLine&&!client.getLocation().equals("还未进入选择大厅")){
+            System.out.println("onLine="+client.onLine);
+            try {
+                sendOne(client,"ServerSendSiXin:/n"+myName+"/n"+content+"/n"+time+"_");
+            } catch (IOException e) {
+                System.out.println("SendFail");
+                IOUtil io=new IOUtil();
+                io.outputFile(client.name+"的私信.txt",myName+"/n"+content+"/n"+time+"_",true);
+            }
+        }else{
+            IOUtil io=new IOUtil();
+            io.outputFile(client.name+"的私信.txt",myName+"/n"+content+"/n"+time+"_",true);
+        }
+    }
+
+    public void sendTSSiXin(String myName){
+        IOUtil io=new IOUtil();
+        String s=io.inputFile(myName+"的私信.txt");
+        System.out.println(myName+"的私信.txt,s="+s);
+        if(!s.isEmpty()){
+            System.out.println("S="+s);
+            String[] strings=s.split("_");
+            System.out.println("sixin="+s);
+            for (String string : strings) {
+                try {
+                    sendOne(clients.get(getClientNamePostion(myName)), "ServerSendSiXin:/n" + string + "_");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        io.deleteFile(myName+"的私信.txt");
     }
 
 

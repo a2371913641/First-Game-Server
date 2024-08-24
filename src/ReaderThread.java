@@ -156,6 +156,7 @@ public class ReaderThread implements Runnable{
 
                     os.write(("setHaoYouList:/n"+getClientString(gongGongZiYuan.beingChlentTiTheFront(clientClass.haoyouList))+"_").getBytes());
                     gongGongZiYuan.setHaoYouList(clientClass.haoyouList);
+                    gongGongZiYuan.sendTSSiXin(clientClass.name);
                     break;
                 case "jinrudating:":
                     System.out.println("Server:------"+"jinrudating:/n"+strings[1]+"_");
@@ -351,6 +352,12 @@ public class ReaderThread implements Runnable{
                 case "ClientTwoRefuseYaoQin:":
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings[1])),
                             "ServerTwoRefuseYaoQin:/n"+clientClass.name+"_");
+                    break;
+                case"ClientSiXin:":
+                    os.write(("ServerSiXin:/n"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])).name+"/n_").getBytes());
+                    break;
+                case"ClientSendSiXin:":
+                    gongGongZiYuan.sendSiXin(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings[1])),clientClass.name,strings[2],strings[3]);
                     break;
                 default:
                     System.out.println(s);
