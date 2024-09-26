@@ -33,7 +33,7 @@ public class WriterThread implements Runnable{
 //            gongGongZiYuan.outSelectDating(clientClass);
 //            gongGongZiYuan.CompleteExit(clientClass);
 
-            System.out.println("WriterThread="+clientClass.name);
+            System.out.println("WriterThread="+clientClass.getName());
 
         }
     }

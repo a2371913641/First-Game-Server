@@ -33,10 +33,10 @@ public class ReaderThread implements Runnable{
         for(int i=0;i<clientClasses.size();i++){
             ClientClass clientClass=clientClasses.get(i);
             if(i==clientClasses.size()-1){
-                sb.append(clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine);
+                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine);
                 break;
             }
-            sb.append(clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n");
+            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n");
         }
         return sb.toString();
     }
@@ -93,7 +93,7 @@ public class ReaderThread implements Runnable{
                         myClientClass=GongGongZiYuan.clients.get(postion);
                         if(!GongGongZiYuan.isLogin.contains(myClientClass)){
                             for(ClientClass clientClass1:GongGongZiYuan.isLogin){
-                                System.out.println("已登录"+clientClass1.zhanghao);
+                                System.out.println("已登录"+clientClass1.getZhanghao());
                             }
                             myClientClass.setOnLine(true);
                             myClientClass.setLocation("还未进入选择大厅");
@@ -102,8 +102,8 @@ public class ReaderThread implements Runnable{
 
                             gongGongZiYuan.setClientsIsHaoYouList(myClientClass.haoyouList);
                             System.out.println("onLine="+myClientClass.onLine);
-                            os.write(("setClient:/n"+myClientClass.name+"/n"+myClientClass.zhanghao+"/n"+myClientClass.xinbie+"/n"+myClientClass.image+"/n"+myClientClass.onLine+"_").getBytes());
-                            os.write(("denglu:/n欢迎回来，"+myClientClass.name+"!_").getBytes());
+                            os.write(("setClient:/n"+myClientClass.getName()+"/n"+myClientClass.getZhanghao()+"/n"+myClientClass.getXinbie()+"/n"+myClientClass.image+"/n"+myClientClass.onLine+"_").getBytes());
+                            os.write(("denglu:/n欢迎回来，"+myClientClass.getName()+"!_").getBytes());
                             os.write("OK_".getBytes());
                             for(Socket socket1:GongGongZiYuan.clientSockets){
                                 System.out.println(socket1.hashCode());
@@ -155,7 +155,7 @@ public class ReaderThread implements Runnable{
 
                     gongGongZiYuan.callClientMyselfHaoYouList(os,myClientClass);
                     gongGongZiYuan.setClientsIsHaoYouList(myClientClass.haoyouList);
-                    gongGongZiYuan.sendTSSiXin(myClientClass.name);
+                    gongGongZiYuan.sendTSSiXin(myClientClass.getName());
                     break;
                 case "jinrudating:":
                     System.out.println("Server:------"+"jinrudating:/n"+strings[1]+"_");
@@ -166,7 +166,7 @@ public class ReaderThread implements Runnable{
                     os.write(("jinrudating:/n"+nowAtHall+"_").getBytes());
                     System.out.println("Server:"+"jinrudating:/n"+nowAtHall+"_");
                     os.write(("dating:/n" + DatinString()+ "_").getBytes());
-                    System.out.println(myClientClass.name+"进来了");
+                    System.out.println(myClientClass.getName()+"进来了");
                     myClientClass.setLocation("在大厅"+nowAtHall);
                     break;
 
@@ -201,18 +201,18 @@ public class ReaderThread implements Runnable{
                         String[] strings1=strings[1].split(":");
                         if(strings1.length==2){
                             System.out.println("name="+strings1[0].substring(1));
-                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"InTheRoomliaotianxiaoxi:/n"+"[私]"+myClientClass.name+":"+strings1[1]+"/n"+strings[2]+"_");
-                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"dating"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))).nowAtHall+":/n"+"[私]"+myClientClass.name+":"+strings1[1]+"/n"+strings[2]+"_");
+                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"InTheRoomliaotianxiaoxi:/n"+"[私]"+myClientClass.getName()+":"+strings1[1]+"/n"+strings[2]+"_");
+                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"dating"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))).nowAtHall+":/n"+"[私]"+myClientClass.getName()+":"+strings1[1]+"/n"+strings[2]+"_");
 
-                            os.write(("dating"+nowAtHall+":/n"+"[私]"+myClientClass.name+":"+strings1[0]+":"+strings1[1]+"/n"+strings[2]+"_").getBytes());
+                            os.write(("dating"+nowAtHall+":/n"+"[私]"+myClientClass.getName()+":"+strings1[0]+":"+strings1[1]+"/n"+strings[2]+"_").getBytes());
 
                         }else{
-                            gongGongZiYuan.allSocketSend("dating"+nowAtHall+":"+"/n[公]"+myClientClass.name+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
+                            gongGongZiYuan.allSocketSend("dating"+nowAtHall+":"+"/n[公]"+myClientClass.getName()+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
                         }
 
                     }else {
-                        gongGongZiYuan.allSocketSend("dating" + nowAtHall + ":" + "/n[公]" + myClientClass.name + ":" + strings[1] + "/n" + strings[2] + "_", GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall));
-                        System.out.println("dating" + nowAtHall + ":" + "/n" + myClientClass.name + ":" + strings[1] + "/n" + strings[2] + "_");
+                        gongGongZiYuan.allSocketSend("dating" + nowAtHall + ":" + "/n[公]" + myClientClass.getName() + ":" + strings[1] + "/n" + strings[2] + "_", GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall));
+                        System.out.println("dating" + nowAtHall + ":" + "/n" + myClientClass.getName() + ":" + strings[1] + "/n" + strings[2] + "_");
                     }
                     break;
 
@@ -237,7 +237,7 @@ public class ReaderThread implements Runnable{
                     break;
                 case "jinruRoom:":
                     room.clientClasses.add(myClientClass);
-                    myClientClass.atRoom=room;
+                    myClientClass.setAtRoom(room);
                     GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).remove(myClientClass);
                     //                                                                                                         房间号
                     gongGongZiYuan.resetRoomNumberOfPeople(room);
@@ -256,16 +256,16 @@ public class ReaderThread implements Runnable{
                         String[] strings1=strings[1].split(":");
                         if(strings1.length==2){
                             System.out.println("name="+strings1[0].substring(1));
-                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"InTheRoomliaotianxiaoxi:/n"+"[私]"+myClientClass.name+":"+strings1[1]+"/n"+strings[2]+"_");
-                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"dating"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))).nowAtHall+":/n"+"[私]"+myClientClass.name+":"+strings1[1]+"/n"+strings[2]+"_");
+                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"InTheRoomliaotianxiaoxi:/n"+"[私]"+myClientClass.getName()+":"+strings1[1]+"/n"+strings[2]+"_");
+                            gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))),"dating"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings1[0].substring(1))).nowAtHall+":/n"+"[私]"+myClientClass.getName()+":"+strings1[1]+"/n"+strings[2]+"_");
 
-                            os.write(("InTheRoomliaotianxiaoxi:/n"+"[私]"+myClientClass.name+":"+strings1[0]+":"+strings1[1]+"/n"+strings[2]+"_").getBytes());
+                            os.write(("InTheRoomliaotianxiaoxi:/n"+"[私]"+myClientClass.getName()+":"+strings1[0]+":"+strings1[1]+"/n"+strings[2]+"_").getBytes());
 
                         }else{
-                            gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n[公]"+myClientClass.name+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
+                            gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n[公]"+myClientClass.getName()+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
                                                 }
                     }else {
-                        gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n[公]"+myClientClass.name+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
+                        gongGongZiYuan.allSocketSend("InTheRoomliaotianxiaoxi:/n[公]"+myClientClass.getName()+":"+strings[1]+"/n"+strings[2]+"_",room.clientClasses);
                     }
                     break;
 
@@ -280,7 +280,7 @@ public class ReaderThread implements Runnable{
                     os.write("tuichuyouxi:/n退出游戏_".getBytes());
                     GongGongZiYuan.isLogin.remove(myClientClass);
                     for(ClientClass clientClass1:GongGongZiYuan.isLogin){
-                        System.out.println("已经登陆"+clientClass1.zhanghao);
+                        System.out.println("已经登陆"+clientClass1.getZhanghao());
                     }
                     GongGongZiYuan.clientSockets.remove(socket);
                     for(Socket socket1:GongGongZiYuan.clientSockets){
@@ -290,13 +290,13 @@ public class ReaderThread implements Runnable{
                     socket.close();
                     break;
                 case"ClientAddFriend:":
-                    gongGongZiYuan.sendOne(myClientClass.atRoom.clientClasses.get(Integer.parseInt(strings[1])),
-                            "serverAddFriend:/n"+myClientClass.name+"/n"+myClientClass.zhanghao+"_");
+                    gongGongZiYuan.sendOne(myClientClass.getAtRoom().clientClasses.get(Integer.parseInt(strings[1])),
+                            "serverAddFriend:/n"+myClientClass.getName()+"/n"+myClientClass.getZhanghao()+"_");
                     break;
 
                 case"ClientDeleteFriend:":
                     gongGongZiYuan.deleteFriend(myClientClass,strings[1]);
-                    gongGongZiYuan.deleteFriend(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),myClientClass.zhanghao);
+                    gongGongZiYuan.deleteFriend(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),myClientClass.getZhanghao());
                     gongGongZiYuan.callClientMyselfHaoYouList(os,myClientClass);
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),"ReadFromFileHaoYouList:_");
                     break;
@@ -307,8 +307,8 @@ public class ReaderThread implements Runnable{
                     break;
 
                 case"ClientRogerTwoAgree:":
-                    System.out.println("oneRoger:"+myClientClass.zhanghao+"/+"+strings[1]);
-                    io.outputFile(myClientClass.zhanghao+"的好友.txt",strings[1]+"/n",true);
+                    System.out.println("oneRoger:"+myClientClass.getZhanghao()+"/+"+strings[1]);
+                    io.outputFile(myClientClass.getZhanghao()+"的好友.txt",strings[1]+"/n",true);
                     myClientClass.haoyouList.add(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])));
 
                     gongGongZiYuan.callClientMyselfHaoYouList(os,myClientClass);
@@ -316,8 +316,8 @@ public class ReaderThread implements Runnable{
                     break;
 
                 case"ClientTwoAgree:":
-                    System.out.println("twoAgree:"+myClientClass.zhanghao+"/+"+strings[1]);
-                    io.outputFile(myClientClass.zhanghao+"的好友.txt",strings[1]+"/n",true);
+                    System.out.println("twoAgree:"+myClientClass.getZhanghao()+"/+"+strings[1]);
+                    io.outputFile(myClientClass.getZhanghao()+"的好友.txt",strings[1]+"/n",true);
                     myClientClass.haoyouList.add(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])));
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),
                             "ServerTwoAgree:/n"+myClientClass.getZhanghao()+"_");
@@ -332,29 +332,45 @@ public class ReaderThread implements Runnable{
 
                 case"ClientZiLiao:": {
                     ClientClass client = GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1]));
-                    os.write(("ServerZiLiao:/n" + client.name + "/n" + client.onLine + "/n" + client.getNowAtHall() + "/n"
+                    os.write(("ServerZiLiao:/n" + client.getName() + "/n" + client.onLine + "/n" + client.getNowAtHall() + "/n"
                             + client.getRoomHaoMa() + "/n" + client.getRoomName() + "/n" + client.getRoomType() + "/n" + client.isRoomAdmin() + "/n" + nowAtHall + "_").getBytes());
 
                 }break;
 
                 case "ClientSiLiao:":
-                    os.write(("ServerSiLiao:/n"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])).name+"_").getBytes());
+                    os.write(("ServerSiLiao:/n"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])).getName()+"_").getBytes());
                     break;
 
                 case"ClientYaoQin:":
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),"ServerYaoQin:/n"+
-                            myClientClass.name+"/n"+myClientClass.atRoom.roomHaoMa+"/n"+myClientClass.atRoom.roomName+"_");
+                            myClientClass.getName()+"/n"+myClientClass.getAtRoom().roomHaoMa+"/n"+myClientClass.getAtRoom().roomName+"_");
                     break;
 
                 case "ClientTwoRefuseYaoQin:":
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings[1])),
-                            "ServerTwoRefuseYaoQin:/n"+myClientClass.name+"_");
+                            "ServerTwoRefuseYaoQin:/n"+myClientClass.getName()+"_");
                     break;
                 case"ClientSiXin:":
-                    os.write(("ServerSiXin:/n"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])).name+"/n_").getBytes());
+                    os.write(("ServerSiXin:/n"+GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])).getName()+"/n_").getBytes());
                     break;
                 case"ClientSendSiXin:":
-                    gongGongZiYuan.sendSiXin(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings[1])),myClientClass.name,strings[2],strings[3]);
+                    gongGongZiYuan.sendSiXin(GongGongZiYuan.clients.get(gongGongZiYuan.getClientNamePostion(strings[1])),myClientClass.getName(),strings[2],strings[3]);
+                    break;
+
+                case"ClientStartGame:":
+                    if(myClientClass.getAtRoom().clientClasses.size()%2!=0){
+                        os.write(("ServerStopGameFromStarting:/n游戏人数不满足_").getBytes());
+                        System.out.println("人数:"+myClientClass.getAtRoom().clientClasses.size());
+                    }else{
+                        gongGongZiYuan.allSocketSend("ServerStartGame:_",myClientClass.getAtRoom().clientClasses);
+                        System.out.println("人数:"+myClientClass.getAtRoom().clientClasses.size());
+                    }
+                    break;
+
+                case"ClientPlayChess:":
+//                        gongGongZiYuan.sendOne();
+                    gongGongZiYuan.allSocketSend("ServerPlayChess:/n"+strings[1]+"/n"+strings[2]+"/n"+strings[3]+"_",myClientClass.getAtRoom().clientClasses);
+                    System.out.println(s);
                     break;
                 default:
                     System.out.println(s);
@@ -375,7 +391,7 @@ public class ReaderThread implements Runnable{
         int postion=-1;
         for(int i=0;i<GongGongZiYuan.clients.size();i++){
             ClientClass clientClass=GongGongZiYuan.clients.get(i);
-            if(clientClass.zhanghao.equals(zhanghao)&&clientClass.admin.equals(admin)){
+            if(clientClass.getZhanghao().equals(zhanghao)&&clientClass.getAdmin().equals(admin)){
                 postion=i;
                 break;
             }
@@ -386,7 +402,7 @@ public class ReaderThread implements Runnable{
     private boolean isRepetitionZhanghao(String newZhanghao){
         boolean b=false;
         for(int i=0;i<GongGongZiYuan.clients.size();i++){
-            if(GongGongZiYuan.clients.get(i).zhanghao.equals(newZhanghao)){
+            if(GongGongZiYuan.clients.get(i).getZhanghao().equals(newZhanghao)){
                 b=true;
                 break;
             }

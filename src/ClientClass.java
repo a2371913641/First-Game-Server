@@ -3,14 +3,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientClass {
-    String name,zhanghao,xinbie,admin;
+    private String name,zhanghao,xinbie,admin;
     int image;
     Boolean onLine;
     ArrayList<ClientClass> haoyouList=new ArrayList<>();
 
     String location=null;
 
-    Room atRoom;
+    private Room atRoom;
+
+    int atRoomPlace;
 
     int nowAtHall=-1;
 
@@ -28,6 +30,10 @@ public class ClientClass {
     public void setName(String name){
         this.name=name;
 
+    }
+
+    public String getAdmin(){
+        return admin;
     }
 
 
@@ -80,8 +86,12 @@ public class ClientClass {
 
     public void setAtRoom(Room room){
         this.atRoom=room;
+
     }
 
+    public Room getAtRoom(){
+        return atRoom;
+    }
     public String getRoomName(){
         if(atRoom==null){
             return "null";

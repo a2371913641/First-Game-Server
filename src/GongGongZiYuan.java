@@ -64,7 +64,7 @@ public class GongGongZiYuan {
         int postion=-1;
         for(int i=0;i<GongGongZiYuan.clients.size();i++){
             ClientClass clientClass=GongGongZiYuan.clients.get(i);
-            if(clientClass.zhanghao.equals(zhanghao)){
+            if(clientClass.getZhanghao().equals(zhanghao)){
                 postion=i;
                 break;
             }
@@ -76,7 +76,7 @@ public class GongGongZiYuan {
         int postion=-1;
         for(int i=0;i<GongGongZiYuan.clients.size();i++){
             ClientClass clientClass=GongGongZiYuan.clients.get(i);
-            if(clientClass.name.equals(name)){
+            if(clientClass.getName().equals(name)){
                 postion=i;
                 break;
             }
@@ -112,10 +112,10 @@ public class GongGongZiYuan {
         for(int i=0;i<clientClasses.size();i++){
             ClientClass clientClass=clientClasses.get(i);
             if(i==clientClasses.size()-1){
-                sb.append(clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine);
+                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine);
                 break;
             }
-            sb.append(clientClass.name+"/n"+clientClass.zhanghao+"/n"+clientClass.xinbie+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n");
+            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n");
         }
         return sb.toString();
     }
@@ -150,10 +150,10 @@ public class GongGongZiYuan {
 
     //离开房间，仅仅改变用户参数
     private Room clientOutRoom(ClientClass clientClass){
-        Room room=clientClass.atRoom;
-        clientClass.atRoom.clientClasses.remove(clientClass);
+        Room room=clientClass.getAtRoom();
+        clientClass.getAtRoom().clientClasses.remove(clientClass);
         clientClass.setLocation("在大厅"+clientClass.nowAtHall);
-        clientClass.atRoom=null;
+        clientClass.setAtRoom(null);
         atDatingOutOfRoom.get(clientClass.nowAtHall).add(clientClass);
         tellClientDaTingClientList(clientClass);
         return room;
@@ -224,8 +224,8 @@ public class GongGongZiYuan {
 
     public void LiXian(ClientClass clientClass){
         Room room=null;
-        if(clientClass.atRoom!=null){
-            room=clientClass.atRoom;
+        if(clientClass.getAtRoom()!=null){
+            room=clientClass.getAtRoom();
         }
         int notAtHall=clientClass.nowAtHall;
         clientClass.nowAtHall=-1;
@@ -287,7 +287,7 @@ public class GongGongZiYuan {
     //从文件中读出好友列表
     public void readFromAFileHaoYouList(){
         for(int i=0;i<GongGongZiYuan.clients.size();i++){
-            String string2=io.inputFile(GongGongZiYuan.clients.get(i).zhanghao+"的好友.txt");
+            String string2=io.inputFile(GongGongZiYuan.clients.get(i).getZhanghao()+"的好友.txt");
             if(!string2.equals("")){
                 String[] strings2= string2.split("/n");
                 for(int j=0;j<strings2.length;j++){
@@ -301,7 +301,7 @@ public class GongGongZiYuan {
         for(int i=clientClass.haoyouList.size()-1;i>=0;i--){
             clientClass.haoyouList.remove(i);
         }
-        String string2=io.inputFile(clientClass.zhanghao+"的好友.txt");
+        String string2=io.inputFile(clientClass.getZhanghao()+"的好友.txt");
         if(!string2.equals("")){
             String[] strings2= string2.split("/n");
             for(int j=0;j<strings2.length;j++){
@@ -329,9 +329,9 @@ public class GongGongZiYuan {
     //单向删除好友
     public void deleteFriend(ClientClass myClient,String adverseZhangHao){
         myClient.haoyouList.remove(clients.get(getClientPostion(adverseZhangHao)));
-        io.deleteFile(myClient.zhanghao+"的好友.txt");
+        io.deleteFile(myClient.getZhanghao()+"的好友.txt");
         for(int i= myClient.haoyouList.size()-1;i>=0;i--){
-            io.outputFile(myClient.zhanghao+"的好友.txt",myClient.haoyouList.get(i).zhanghao+"/n",true);
+            io.outputFile(myClient.getZhanghao()+"的好友.txt",myClient.haoyouList.get(i).getZhanghao()+"/n",true);
         }
     }
 
@@ -371,11 +371,11 @@ public class GongGongZiYuan {
             } catch (IOException e) {
                 System.out.println("SendFail");
                 IOUtil io=new IOUtil();
-                io.outputFile(client.name+"的私信.txt",myName+"/n"+content+"/n"+time+"_",true);
+                io.outputFile(client.getName()+"的私信.txt",myName+"/n"+content+"/n"+time+"_",true);
             }
         }else{
             IOUtil io=new IOUtil();
-            io.outputFile(client.name+"的私信.txt",myName+"/n"+content+"/n"+time+"_",true);
+            io.outputFile(client.getName()+"的私信.txt",myName+"/n"+content+"/n"+time+"_",true);
         }
     }
 
@@ -398,6 +398,11 @@ public class GongGongZiYuan {
         }
         io.deleteFile(myName+"的私信.txt");
     }
+
+    //获得对手玩家的ClientClass
+//    public void getRivalClient(ClientClass myClientClass){
+//        if(myClientClass.getAtRoom().clientClasses.get())
+//    }
 
 
 
