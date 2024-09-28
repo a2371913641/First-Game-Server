@@ -236,7 +236,7 @@ public class ReaderThread implements Runnable{
                     room=getHaoMaRoom(Integer.parseInt(strings[1]));
                     break;
                 case "jinruRoom:":
-                    room.clientClasses.add(myClientClass);
+                    gongGongZiYuan.jinruRoom(room,myClientClass);
                     myClientClass.setAtRoom(room);
                     GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).remove(myClientClass);
                     //                                                                                                         房间号
@@ -368,8 +368,7 @@ public class ReaderThread implements Runnable{
                     break;
 
                 case"ClientPlayChess:":
-//                        gongGongZiYuan.sendOne();
-                    gongGongZiYuan.allSocketSend("ServerPlayChess:/n"+strings[1]+"/n"+strings[2]+"/n"+strings[3]+"_",myClientClass.getAtRoom().clientClasses);
+                    gongGongZiYuan.sendOne(gongGongZiYuan.getRivalClient(myClientClass),"ServerPlayChess:/n"+strings[1]+"/n"+strings[2]+"/n"+strings[3]+"_");
                     System.out.println(s);
                     break;
                 default:

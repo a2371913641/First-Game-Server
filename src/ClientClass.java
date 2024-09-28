@@ -16,6 +16,7 @@ public class ClientClass {
 
     int nowAtHall=-1;
 
+    private int seat=-1;
     Socket socket;
     public ClientClass(String zhanghao,String admin,String name,String xb,int image,Boolean onLine){
 
@@ -120,4 +121,11 @@ public class ClientClass {
         return atRoom.roomHaoMa+"";
     }
 
+    public void setSeat(int i){
+        this.seat=i;
+    }
+
+    public int getSeat(){
+        return seat;
+    }
 }

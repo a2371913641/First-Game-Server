@@ -1,8 +1,7 @@
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class GongGongZiYuan {
 
@@ -120,6 +119,19 @@ public class GongGongZiYuan {
         return sb.toString();
     }
 
+    public String getClientRoomString(ArrayList<ClientClass> clientClasses){
+        StringBuilder sb=new StringBuilder();
+        for(int i=0;i<clientClasses.size();i++){
+            ClientClass clientClass=clientClasses.get(i);
+            if(i==clientClasses.size()-1){
+                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat());
+                break;
+            }
+            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n");
+        }
+        return sb.toString();
+    }
+
     public String roomListString(ArrayList<Room> list){
         StringBuilder sb=new StringBuilder();
         for(int i=0;i<list.size();i++){
@@ -176,7 +188,7 @@ public class GongGongZiYuan {
 
     //重置房间的人数
     public void resetRoomNumberOfPeople(Room room){
-        allSocketSend("setInTheRoomClient:/n"+getClientString(room.clientClasses)+"_",room.clientClasses);
+        allSocketSend("setInTheRoomClient:/n"+getClientRoomString(room.clientClasses)+"_",room.clientClasses);
     }
 
     //重置当前大厅邀请列表
@@ -399,10 +411,35 @@ public class GongGongZiYuan {
         io.deleteFile(myName+"的私信.txt");
     }
 
+    //clientClass进入room
+    public void jinruRoom(Room room,ClientClass clientClass){
+        List<String> list=new ArrayList<>();
+        for(int i=0;i<6;i++){
+            list.add(i,String.valueOf(i));
+        }
+        for(int i=0;i<room.clientClasses.size();i++){
+            list.remove(String.valueOf(room.clientClasses.get(i).getSeat()));
+        }
+        room.clientClasses.add(clientClass);
+        clientClass.setSeat(Integer.parseInt(list.get(0)));
+        System.out.println("seat="+Integer.parseInt(list.get(0)));
+    }
+
     //获得对手玩家的ClientClass
-//    public void getRivalClient(ClientClass myClientClass){
-//        if(myClientClass.getAtRoom().clientClasses.get())
-//    }
+    public ClientClass getRivalClient(ClientClass myClientClass){
+        int rivalClientSeat;
+        if(myClientClass.getSeat()%2==0){
+            rivalClientSeat=myClientClass.getSeat()+1;
+        }else{
+            rivalClientSeat=myClientClass.getSeat()-1;
+        }
+        for(int i=0;i<myClientClass.getAtRoom().clientClasses.size();i++){
+            if(myClientClass.getAtRoom().clientClasses.get(i).getSeat()==rivalClientSeat){
+                return myClientClass.getAtRoom().clientClasses.get(i);
+            }
+        }
+        return null;
+    }
 
 
 

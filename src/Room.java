@@ -9,7 +9,9 @@ public class Room {
         this.roomName=name;
         this.roomType=type;
         this.roomHaoMa=roomHaoMa;
+
     }
+
 
     public String getRoomName(){
         return roomName;
