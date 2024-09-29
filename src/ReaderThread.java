@@ -371,6 +371,12 @@ public class ReaderThread implements Runnable{
                     gongGongZiYuan.sendOne(gongGongZiYuan.getRivalClient(myClientClass),"ServerPlayChess:/n"+strings[1]+"/n"+strings[2]+"/n"+strings[3]+"_");
                     System.out.println(s);
                     break;
+                case"ClientGameOver:":
+                    System.out.println(s);
+                    gongGongZiYuan.sendOne(myClientClass,"ServerGameOver:/n"+strings[1]+"胜利！"+"_");
+                    System.out.println("ServerGameOver:/n"+strings[1]+"胜利！"+"_");
+                    gongGongZiYuan.sendOne(gongGongZiYuan.getRivalClient(myClientClass),"ServerGameOver:/n"+strings[1]+"胜利！"+"_");
+                    break;
                 default:
                     System.out.println(s);
             }
