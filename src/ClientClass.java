@@ -10,6 +10,9 @@ public class ClientClass {
 
     String location=null;
 
+    //玩家在房间内的状态
+    String clientState=null;
+
     private Room atRoom;
 
     int atRoomPlace;
@@ -127,5 +130,13 @@ public class ClientClass {
 
     public int getSeat(){
         return seat;
+    }
+
+    public void setClientState(String clientState){
+        this.clientState=clientState;
+    }
+
+    public String getClientState(){
+        return clientState;
     }
 }

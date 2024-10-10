@@ -124,10 +124,10 @@ public class GongGongZiYuan {
         for(int i=0;i<clientClasses.size();i++){
             ClientClass clientClass=clientClasses.get(i);
             if(i==clientClasses.size()-1){
-                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat());
+                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n"+clientClass.getClientState());
                 break;
             }
-            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n");
+            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n"+clientClass.getClientState()+"/n");
         }
         return sb.toString();
     }
@@ -152,8 +152,10 @@ public class GongGongZiYuan {
         if(room.clientClasses.isEmpty()){
             removeRoom(clientClass.nowAtHall,room);
         }else {
+            resetFangZhu(room);
             resetRoomNumberOfPeople(room);
-           resetDatingRoomList(clientClass.nowAtHall);
+            resetRoomClientState(room);
+            resetDatingRoomList(clientClass.nowAtHall);
         }
         resetYaoqingList(clientClass.nowAtHall);
         setClientsIsHaoYouList(clientClass.haoyouList);
@@ -441,6 +443,39 @@ public class GongGongZiYuan {
         return null;
     }
 
+    //重新选择房主
+    private void resetFangZhu(Room room){
+       for(int j=0;j<6;j++){
+           for(int i=0;i<room.clientClasses.size();i++){
+               if(room.clientClasses.get(i).getSeat()==j){
+                   room.clientClasses.get(i).setClientState("房主");
+                   return;
+               }
+           }
+       }
+    }
+
+    //告诉所有房间内的玩家角色发生的变化
+    public void resetRoomClientState(Room room){
+        for(int i=0;i<room.clientClasses.size();i++){
+            try {
+                sendOne(room.clientClasses.get(i),"ServerClientState:/n"+room.clientClasses.get(i).clientState+"_");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    //已准备的玩家人数
+    public int getReserveNumber(Room room){
+        int number=1;
+        for(ClientClass clientClass:room.clientClasses){
+            if(clientClass.clientState.equals("已准备")){
+                number++;
+            }
+        }
+        return number;
+    }
 
 
 }
