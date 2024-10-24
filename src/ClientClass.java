@@ -13,6 +13,8 @@ public class ClientClass {
     //玩家在房间内的状态
     String clientState=null;
 
+    String team=null;
+
     private Room atRoom;
 
     int atRoomPlace;
@@ -100,14 +102,14 @@ public class ClientClass {
         if(atRoom==null){
             return "null";
         }
-        return atRoom.roomName;
+        return atRoom.getRoomName();
     }
 
     public String getRoomType(){
         if(atRoom==null){
             return "null";
         }
-        return atRoom.roomType;
+        return atRoom.getRoomType();
     }
 
     public String isRoomAdmin(){
@@ -121,7 +123,7 @@ public class ClientClass {
         if(atRoom==null){
             return "null";
         }
-        return atRoom.roomHaoMa+"";
+        return atRoom.getRoomHaoMa()+"";
     }
 
     public void setSeat(int i){
@@ -138,5 +140,18 @@ public class ClientClass {
 
     public String getClientState(){
         return clientState;
+    }
+
+    public void setTeam(String s){
+        if(!s.equals("null")){
+            this.team=s;
+        }
+    }
+    public void clearTeam(){
+        this.team=null;
+    }
+
+    public String getTeam(){
+        return this.team;
     }
 }

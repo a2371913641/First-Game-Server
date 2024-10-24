@@ -119,15 +119,15 @@ public class GongGongZiYuan {
         return sb.toString();
     }
 
-    public String getClientRoomString(ArrayList<ClientClass> clientClasses){
+    private String getClientRoomString(ArrayList<ClientClass> clientClasses){
         StringBuilder sb=new StringBuilder();
         for(int i=0;i<clientClasses.size();i++){
             ClientClass clientClass=clientClasses.get(i);
             if(i==clientClasses.size()-1){
-                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n"+clientClass.getClientState());
+                sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n"+clientClass.getClientState()+"/n"+clientClass.team);
                 break;
             }
-            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n"+clientClass.getClientState()+"/n");
+            sb.append(clientClass.getName()+"/n"+clientClass.getZhanghao()+"/n"+clientClass.getXinbie()+"/n"+clientClass.image+"/n"+clientClass.onLine+"/n"+clientClass.getSeat()+"/n"+clientClass.getClientState()+"/n"+clientClass.team+"/n");
         }
         return sb.toString();
     }
@@ -137,10 +137,10 @@ public class GongGongZiYuan {
         for(int i=0;i<list.size();i++){
             Room room=list.get(i);
             if(i==list.size()-1){
-                sb.append(room.roomName+"/n"+room.roomType+"/n"+room.roomAdmin+"/n"+room.roomHaoMa);
+                sb.append(room.getRoomName()+"/n"+room.getRoomType()+"/n"+room.getRoomAdmin()+"/n"+room.getRoomHaoMa());
                 break;
             }
-            sb.append(room.roomName+"/n"+room.roomType+"/n"+room.roomAdmin+"/n"+room.roomHaoMa+"/n");
+            sb.append(room.getRoomName()+"/n"+room.getRoomType()+"/n"+room.getRoomAdmin()+"/n"+room.getRoomHaoMa()+"/n");
         }
         return sb.toString();
     }
@@ -148,11 +148,18 @@ public class GongGongZiYuan {
 
     //离开房间，改变全部需要改变的变量
     public void outRoom(ClientClass clientClass){
+        int seat=clientClass.getSeat();
         Room room=clientOutRoom(clientClass);
+        room.giveBackTeam(clientClass.getTeam());
+        room.giveBackSeat(clientClass.getSeat());
+        clientClass.clearTeam();
+        clientClass.setSeat(-1);
         if(room.clientClasses.isEmpty()){
             removeRoom(clientClass.nowAtHall,room);
         }else {
-            resetFangZhu(room);
+            if(seat==room.getFangZhu()) {
+                resetFangZhu(room);
+            }
             resetRoomNumberOfPeople(room);
             resetRoomClientState(room);
             resetDatingRoomList(clientClass.nowAtHall);
@@ -238,7 +245,9 @@ public class GongGongZiYuan {
 
     public void LiXian(ClientClass clientClass){
         Room room=null;
+        int seat=-1;
         if(clientClass.getAtRoom()!=null){
+            seat=clientClass.getSeat();
             room=clientClass.getAtRoom();
         }
         int notAtHall=clientClass.nowAtHall;
@@ -246,7 +255,8 @@ public class GongGongZiYuan {
         tuichuRemoveList(clientClass,room,notAtHall);
         clientClass.onLine=false;
         clientClass.setLocation(null);
-
+        clientClass.clearTeam();
+        clientClass.setSeat(-1);
         if(notAtHall!=-1){
             allSocketSend("datingClient:/n"+getClientString(GongGongZiYuan.onLineClients.get(notAtHall))+"_",
                     GongGongZiYuan.onLineClients.get(notAtHall));
@@ -254,7 +264,10 @@ public class GongGongZiYuan {
             if(room!=null&&room.clientClasses.isEmpty()){
                 removeRoom(notAtHall,room);
             }else if(room!=null){
-               resetRoomNumberOfPeople(room);
+                if(seat!=-1&&seat==room.getFangZhu()) {
+                    resetFangZhu(room);
+                }
+                resetRoomNumberOfPeople(room);
                 resetDatingRoomList(notAtHall);
 
             }
@@ -265,6 +278,7 @@ public class GongGongZiYuan {
     }
 
 
+    //退出房间，大厅，在线等列表
     public void tuichuRemoveList(ClientClass clientClass,Room room,int nowAtHall){
         isLogin.remove(clientClass);
         if(nowAtHall!=-1) {
@@ -274,7 +288,11 @@ public class GongGongZiYuan {
                 dating[nowAtHall] = dating[nowAtHall] - 1;
             }
             if(room!=null) {
+                room.giveBackTeam(clientClass.getTeam());
+                room.giveBackSeat(clientClass.getSeat());
                 room.clientClasses.remove(clientClass);
+                clientClass.setSeat(-1);
+
             }
         }
 
@@ -415,51 +433,52 @@ public class GongGongZiYuan {
 
     //clientClass进入room
     public void jinruRoom(Room room,ClientClass clientClass){
-        List<String> list=new ArrayList<>();
-        for(int i=0;i<6;i++){
-            list.add(i,String.valueOf(i));
-        }
-        for(int i=0;i<room.clientClasses.size();i++){
-            list.remove(String.valueOf(room.clientClasses.get(i).getSeat()));
-        }
+        int seat=room.getSeat();
+        clientClass.setSeat(seat);
+        System.out.println("seat="+seat);
         room.clientClasses.add(clientClass);
-        clientClass.setSeat(Integer.parseInt(list.get(0)));
-        System.out.println("seat="+Integer.parseInt(list.get(0)));
     }
 
     //获得对手玩家的ClientClass
     public ClientClass getRivalClient(ClientClass myClientClass){
-        int rivalClientSeat;
-        if(myClientClass.getSeat()%2==0){
-            rivalClientSeat=myClientClass.getSeat()+1;
-        }else{
-            rivalClientSeat=myClientClass.getSeat()-1;
-        }
-        for(int i=0;i<myClientClass.getAtRoom().clientClasses.size();i++){
-            if(myClientClass.getAtRoom().clientClasses.get(i).getSeat()==rivalClientSeat){
-                return myClientClass.getAtRoom().clientClasses.get(i);
-            }
-        }
-        return null;
+        ClientClass rivalClient = null;
+       for(ClientClass clientClass:myClientClass.getAtRoom().clientClasses){
+           if(clientClass.getTeam().equals(myClientClass.getTeam())&&clientClass.getSeat()!=myClientClass.getSeat()){
+               rivalClient=clientClass;
+               break;
+           }
+       }
+       return rivalClient;
     }
 
     //重新选择房主
     private void resetFangZhu(Room room){
-       for(int j=0;j<6;j++){
-           for(int i=0;i<room.clientClasses.size();i++){
-               if(room.clientClasses.get(i).getSeat()==j){
+       for (int j = 0; j < 6; j++) {
+           for (int i = 0; i < room.clientClasses.size(); i++) {
+               if (room.clientClasses.get(i).getSeat() == j) {
+                   room.setFangZhu(room.clientClasses.get(i).getSeat());
                    room.clientClasses.get(i).setClientState("房主");
                    return;
                }
            }
        }
+
     }
 
-    //告诉所有房间内的玩家角色发生的变化
+    public void setFangZhu(Room room){
+        for(ClientClass clientClass:room.clientClasses){
+            if(clientClass.clientState.equals("房主")){
+                room.setFangZhu(clientClass.getSeat());
+            }
+        }
+    }
+
+    //告诉所有房间内的玩家自己的角色发生的变化
     public void resetRoomClientState(Room room){
         for(int i=0;i<room.clientClasses.size();i++){
             try {
                 sendOne(room.clientClasses.get(i),"ServerClientState:/n"+room.clientClasses.get(i).clientState+"_");
+                System.out.println(room.clientClasses.get(i).getName()+"state:"+room.clientClasses.get(i).clientState);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -477,5 +496,45 @@ public class GongGongZiYuan {
         return number;
     }
 
+
+    public Boolean isCanStateGame(Room room) {
+        boolean canStateGame=false;
+        int red=0;
+        int blue=0;
+        int yellow=0;
+        List<String> surplusTeam=room.getTeamSurplus();
+        if(getReserveNumber(room)%2==0){
+            for(String s:surplusTeam){
+                switch (s){
+                    case "红队":
+                        red++;
+                        break;
+                    case "蓝队":
+                        blue++;
+                        break;
+                    case "黄队":
+                        yellow++;
+                        break;
+                }
+            }
+
+            if(red%2==0&&blue%2==0&&yellow%2==0){
+                canStateGame=true;
+            }
+        }
+
+        return canStateGame;
+    }
+
+    //主动更换队伍
+    public void initiativeSetTeam(String s,ClientClass clientClass){
+        Room room=clientClass.getAtRoom();
+        String teamName=room.getTeam(s);
+        System.out.println("teamName="+teamName);
+        if(!teamName.equals("null")){
+            room.giveBackTeam(clientClass.getTeam());
+            clientClass.setTeam(teamName);
+        }
+    }
 
 }

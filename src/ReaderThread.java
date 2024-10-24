@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class ReaderThread implements Runnable{
     Socket socket;
+
     ClientClass myClientClass;
     IOUtil io=new IOUtil();
     GongGongZiYuan gongGongZiYuan=new GongGongZiYuan();
@@ -45,10 +46,10 @@ public class ReaderThread implements Runnable{
         for(int i=0;i<list.size();i++){
             Room room=list.get(i);
             if(i==list.size()-1){
-                sb.append(room.roomName+"/n"+room.roomType+"/n"+room.roomAdmin+"/n"+room.roomHaoMa);
+                sb.append(room.getRoomName()+"/n"+room.getRoomType()+"/n"+room.getRoomAdmin()+"/n"+room.getRoomHaoMa());
                 break;
             }
-            sb.append(room.roomName+"/n"+room.roomType+"/n"+room.roomAdmin+"/n"+room.roomHaoMa+"/n");
+            sb.append(room.getRoomName()+"/n"+room.getRoomType()+"/n"+room.getRoomAdmin()+"/n"+room.getRoomHaoMa()+"/n");
         }
         return sb.toString();
     }
@@ -64,6 +65,7 @@ public class ReaderThread implements Runnable{
                     System.out.println("data="+data);
                     String[] ss=data.split("_");
                     for(String s:ss){
+                        System.out.println("chulixiaoxi:"+s);
                         chulixiaoxi(s);
                     }
 
@@ -223,6 +225,7 @@ public class ReaderThread implements Runnable{
                     os.write(("5-6:/n"+"_").getBytes());
                     System.out.println("5-6");
                     myClientClass.setClientState("房主");
+
                     break;
 
                 case "buttonJinru:":
@@ -238,14 +241,20 @@ public class ReaderThread implements Runnable{
                     myClientClass.setClientState("未准备");
                     break;
                 case "jinruRoom:":
+                    System.out.println("jinruRoom!!!!");
+                    gongGongZiYuan.setFangZhu(room);
                     gongGongZiYuan.jinruRoom(room,myClientClass);
+                    System.out.println("gongGongZiYuan.jinruRoom(room,myClientClass);OK");
                     myClientClass.setAtRoom(room);
+                    String team=room.getTeam();
+                    myClientClass.setTeam(team);
+                    System.out.println("Team="+team);
                     GongGongZiYuan.atDatingOutOfRoom.get(nowAtHall).remove(myClientClass);
                     gongGongZiYuan.resetRoomNumberOfPeople(room);
                     gongGongZiYuan.resetYaoqingList(nowAtHall);
-                    os.write(("setRoom:/n"+room.roomName+"/n"+room.roomAdmin+"/n"+room.roomType+"/n"+room.roomHaoMa+"_").getBytes());
+                    os.write(("setRoom:/n"+room.getRoomName()+"/n"+room.getRoomAdmin()+"/n"+room.getRoomType()+"/n"+room.getRoomHaoMa()+"_").getBytes());
                     os.write(("ServerClientState:/n"+myClientClass.clientState+"_").getBytes());
-                    myClientClass.setLocation("在大厅"+nowAtHall+"中的["+room.roomHaoMa+"]"+room.roomName);
+                    myClientClass.setLocation("在大厅"+nowAtHall+"中的["+room.getRoomHaoMa()+"]"+room.getRoomName());
                     gongGongZiYuan.callClientMyselfHaoYouList(os,myClientClass);
                     gongGongZiYuan.setClientsIsHaoYouList(myClientClass.haoyouList);
                     break;
@@ -345,7 +354,7 @@ public class ReaderThread implements Runnable{
 
                 case"ClientYaoQin:":
                     gongGongZiYuan.sendOne(GongGongZiYuan.clients.get(gongGongZiYuan.getClientPostion(strings[1])),"ServerYaoQin:/n"+
-                            myClientClass.getName()+"/n"+myClientClass.getAtRoom().roomHaoMa+"/n"+myClientClass.getAtRoom().roomName+"_");
+                            myClientClass.getName()+"/n"+myClientClass.getAtRoom().getRoomHaoMa()+"/n"+myClientClass.getAtRoom().getRoomName()+"_");
                     break;
 
                 case "ClientTwoRefuseYaoQin:":
@@ -360,13 +369,51 @@ public class ReaderThread implements Runnable{
                     break;
 
                 case"ClientStartGame:":
-                    if(gongGongZiYuan.getReserveNumber(room)%2!=0){
-                        os.write(("ServerStopGameFromStarting:/n游戏人数不满足_").getBytes());
-                        System.out.println("人数:"+myClientClass.getAtRoom().clientClasses.size());
-                    }else{
+                    if(gongGongZiYuan.isCanStateGame(room)){
+                        for(ClientClass clientClass:room.clientClasses){
+                            clientClass.setClientState("游戏中");
+                        }
+                        gongGongZiYuan.resetRoomClientState(room);
                         gongGongZiYuan.allSocketSend("ServerStartGame:_",myClientClass.getAtRoom().clientClasses);
-                        System.out.println("人数:"+myClientClass.getAtRoom().clientClasses.size());
+                    }else{
+                        os.write(("ServerStopGameFromStarting:/n游戏人数不满足_").getBytes());
+
                     }
+
+                    break;
+
+                case "ClientReturnRoom:":
+                     System.out.println("myClientClass.getSeat()="+myClientClass.getSeat()+";room.getFangZhu()="+room.getFangZhu());
+                     if(myClientClass.getSeat()!=room.getFangZhu()){
+                         myClientClass.setClientState("未准备");
+                     }else {
+                         myClientClass.setClientState("房主");
+                     }
+                     gongGongZiYuan.resetRoomClientState(room);
+                    break;
+                case"ClientOnRoom:":
+                    for(ClientClass clientClass:room.clientClasses){
+                        if(clientClass.getSeat()==Integer.parseInt(strings[1])){
+                            room.clientClasses.remove(clientClass);
+                            break;
+                        }
+                    }
+                    room.giveBackSeat(Integer.parseInt(strings[1]));
+                    gongGongZiYuan.resetRoomNumberOfPeople(room);
+                    break;
+
+                case "ClientOffRoom:":
+                    ClientClass nullClient=new ClientClass("null","null","null","off",0,false);
+                    nullClient.setSeat(room.closeSeat(Integer.parseInt(strings[1])));
+                    nullClient.setClientState("null");
+                    room.clientClasses.add(nullClient);
+                    gongGongZiYuan.resetRoomNumberOfPeople(room);
+                    break;
+                case"ClientResetRoomClientState:":
+                    gongGongZiYuan.resetRoomClientState(room);
+                    gongGongZiYuan.resetRoomNumberOfPeople(room);
+
+                    System.out.println("ClientResetRoomClientState:+room.size="+room.clientClasses.size());
                     break;
 
                 case"ClientCancelReserve:":
@@ -384,6 +431,10 @@ public class ReaderThread implements Runnable{
                     gongGongZiYuan.sendOne(gongGongZiYuan.getRivalClient(myClientClass),"ServerPlayChess:/n"+strings[1]+"/n"+strings[2]+"/n"+strings[3]+"_");
                     System.out.println(s);
                     break;
+                case "ClientInitiativeSetTeam:":
+                    gongGongZiYuan.initiativeSetTeam(strings[1],myClientClass);
+                    gongGongZiYuan.resetRoomNumberOfPeople(room);
+                    break;
 
                 case"ClientGameOver:":
                     System.out.println(s);
@@ -391,7 +442,6 @@ public class ReaderThread implements Runnable{
                     System.out.println("ServerGameOver:/n"+strings[1]+"胜利！"+"_");
                     gongGongZiYuan.sendOne(gongGongZiYuan.getRivalClient(myClientClass),"ServerGameOver:/n"+strings[1]+"胜利！"+"_");
                     break;
-
 
                 default:
                     System.out.println(s);
@@ -433,7 +483,7 @@ public class ReaderThread implements Runnable{
 
     private Room getHaoMaRoom(int HaoMa){
         for (Room room1:GongGongZiYuan.datingListRoomList.get(nowAtHall)){
-            if(room1.roomHaoMa==HaoMa){
+            if(room1.getRoomHaoMa()==HaoMa){
                 return room1;
             }
         }
