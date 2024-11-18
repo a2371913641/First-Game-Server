@@ -302,7 +302,7 @@ public class ReaderThread implements Runnable{
                     socket.close();
                     break;
                 case"ClientAddFriend:":
-                    gongGongZiYuan.sendOne(myClientClass.getAtRoom().clientClasses.get(Integer.parseInt(strings[1])),
+                    gongGongZiYuan.sendOne(gongGongZiYuan.getSeatClient(room,Integer.parseInt(strings[1])),
                             "serverAddFriend:/n"+myClientClass.getName()+"/n"+myClientClass.getZhanghao()+"_");
                     break;
 
